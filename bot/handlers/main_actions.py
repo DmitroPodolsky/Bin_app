@@ -320,11 +320,12 @@ async def routine_load_bins(file_data: str, message: Message):
     # Парсим и закидываем строки
     async def producer():
         first = True
-        for line in file_data.splitlines():
-            if first:
-                first = False
-                continue
-            await queue.put(line)
+        with open("bin-list-data.csv", "r") as file:
+            for line in file:
+                if first:
+                    first = False
+                    continue
+                await queue.put(line)
         for _ in range(WORKERS):
             await queue.put(None)
 
