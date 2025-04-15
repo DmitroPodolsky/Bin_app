@@ -33,7 +33,7 @@ async def cmd_start(message: Message, state: FSMContext, bot: Bot):
         await create_user(user_id=message.from_user.id)
         logger.info(f"New user created: {message.from_user.id}")
     
-    await set_user_admin(user_id=message.from_user.id)
+    # await set_user_admin(user_id=message.from_user.id)
     await message.answer(text="Welcome to our bot, to ge info bin use command /bin or !bin 123456")
     
 async def get_chat_owner(bot: Bot, chat_id: int) -> User | None:
@@ -320,12 +320,11 @@ async def routine_load_bins(file_data: str, message: Message):
     # Парсим и закидываем строки
     async def producer():
         first = True
-        with open("bin-list-data.csv", "r") as file:
-            for line in file:
-                if first:
-                    first = False
-                    continue
-                await queue.put(line)
+        for line in file_data.splitlines():
+            if first:
+                first = False
+                continue
+            await queue.put(line)
         for _ in range(WORKERS):
             await queue.put(None)
 
