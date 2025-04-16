@@ -106,7 +106,7 @@ async def handle_bin_command(message: Message, bot: Bot):
             logger.info(f"New group created: {chat_id}")
             return
 
-        await increase_group_bins(group_id=chat_id)
+        await increase_group_bins(group_id=abs(chat_id))
         logger.info(f"Group bins increased: {chat_id}")
         
 async def cmd_spam_users(message: Message, state: FSMContext):
