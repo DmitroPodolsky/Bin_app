@@ -56,17 +56,17 @@ async def filter_bins(
 
 async def create_user(
     user_id: int,
+    username: str = None,
 ):
     """
     Inserts a new user into the 'users' table.
     """
     sql_query = """
-    INSERT INTO users (id)
-    VALUES ($1)
+    INSERT INTO users (id, username)
+    VALUES ($1, $2)
     ON CONFLICT (id) DO NOTHING;
     """
-    
-    await execute(sql_query, user_id)
+    await execute(sql_query, user_id, username)
     
 async def set_user_admin(
     user_id: int,

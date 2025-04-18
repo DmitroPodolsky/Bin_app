@@ -5,17 +5,20 @@ from random import choices
 import re
 import shutil
 import string
+import aiofiles
 from aiogram import Bot
 from aiogram.types import Message
 from aiogram.types import CallbackQuery
+from aiogram.types import FSInputFile
 from aiogram.types import User
 from aiogram.fsm.context import FSMContext
 from loguru import logger
+import uuid
 
-from bot.config import RU_LANG, settings, project_dir
+from bot.config import RU_LANG, project_dir
 
 # from bot.database.sql_operations import create_new_user, create_payment, get_user, get_user_accounts, get_user_accounts_ready
-from bot.database.manager import  create_bin, create_group, create_user, get_bin, get_count_of_bins, get_group, get_groups, get_user, get_users, increase_group_bins, increase_user_bins, set_user_admin
+from bot.database.manager import create_group, create_user, get_bin, get_count_of_bins, get_group, get_groups, get_user, get_users, increase_group_bins, increase_user_bins, set_user_admin
 from bot.database.sql_operations import execute
 from bot.keyboards import get_inline_cancel_panel, get_inline_user_panel
 from bot.states import UserStatesGroup
@@ -30,7 +33,7 @@ async def cmd_start(message: Message, state: FSMContext, bot: Bot):
     user = await get_user(user_id=message.from_user.id)
     
     if not user:
-        await create_user(user_id=message.from_user.id)
+        await create_user(user_id=message.from_user.id, username=message.from_user.username)
         logger.info(f"New user created: {message.from_user.id}")
     
     # await set_user_admin(user_id=message.from_user.id)
@@ -386,11 +389,49 @@ async def admin_cmd(message: Message, state: FSMContext):
             "<code>/get_info_group</code> — Get info about group\n"
             "<code>/make_admin</code> — Make user admin\n"
             "<code>/spam_users</code> — Spam users\n"
-            "<code>/load_bins</code> — Load bins from file"
+            "<code>/load_bins</code> — Load bins from file\n"
+            "<code>/get_groups_ids</code> — Get group IDs\n"
+            "<code>/get_users_username</code> — Get usernames\n"
         ),
         parse_mode="HTML"
     )
     await state.set_state(UserStatesGroup.admin_panel)
+    
+async def get_groups_ids_cmd(message: Message):
+    user = await get_user(user_id=message.from_user.id)
+    if not user or not user["is_admin"]:
+        return
+
+    groups = await get_groups()
+    group_ids = [str(group['id']) for group in groups]
+
+    file_uuid = uuid.uuid4().hex
+    file_path = f"group_ids_{file_uuid}.txt"
+
+    async with aiofiles.open(file_path, mode='w') as f:
+        await f.write("Group IDs:\n" + "\n".join(group_ids))
+
+    await message.answer_document(document=FSInputFile(file_path))
+
+    os.remove(file_path)
+    
+async def cmd_get_users_username_cmd(message: Message):
+    user = await get_user(user_id=message.from_user.id)
+    if not user or not user["is_admin"]:
+        return
+
+    users = await get_users()
+    usernames = [str(user['username']) for user in users if user['username']]
+
+    file_uuid = uuid.uuid4().hex
+    file_path = f"usernames_{file_uuid}.txt"
+
+    async with aiofiles.open(file_path, mode='w') as f:
+        await f.write("Usernames:\n" + "\n".join(usernames))
+
+    await message.answer_document(document=FSInputFile(file_path))
+
+    os.remove(file_path)
     
 async def hello_from_message(message: Message, bot: Bot):
     project_path = project_dir

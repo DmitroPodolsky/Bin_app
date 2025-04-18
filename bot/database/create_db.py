@@ -20,6 +20,7 @@ async def create_users_table():
     create_table_sql = """
     CREATE TABLE IF NOT EXISTS users (
         id BIGINT PRIMARY KEY,
+        username TEXT,
         count_collected_bins INTEGER DEFAULT 1,
         created_at TIMESTAMP NOT NULL DEFAULT NOW(),
         is_admin BOOLEAN DEFAULT FALSE
@@ -76,6 +77,13 @@ async def create_purchase_history_table():
     );
     """
     await execute(create_table_sql)
+    
+async def migrate_add_username_column():
+    alter_table_sql = """
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS username TEXT;
+    """
+    await execute(alter_table_sql)
+
 
 async def create_all_tables():
     try:
@@ -83,6 +91,7 @@ async def create_all_tables():
         await create_users_table()
         await create_groups_table()
         await create_purchase_history_table()
+        await migrate_add_username_column()
         logger.info("All tables created successfully.")
     except Exception as e:
         logger.error(f"Failed to create tables: {e}")

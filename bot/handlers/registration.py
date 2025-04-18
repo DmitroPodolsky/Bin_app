@@ -4,7 +4,7 @@ from aiogram.filters import Command
 from aiogram.types import ContentType
 from aiogram.enums.chat_type import ChatType
 
-from bot.handlers.main_actions import admin_cmd, cancel_callback, cmd_spam_users, cmd_start, get_info_group_cmd, get_statistics_cmd, handle_bin_command, hello_from_message, load_bins, load_bins_cmd, make_admin_cmd, spam_users
+from bot.handlers.main_actions import admin_cmd, cancel_callback, cmd_get_users_username_cmd, cmd_spam_users, cmd_start, get_groups_ids_cmd, get_info_group_cmd, get_statistics_cmd, handle_bin_command, hello_from_message, load_bins, load_bins_cmd, make_admin_cmd, spam_users
 from bot.states import UserStatesGroup
 
 router = Router()
@@ -18,6 +18,8 @@ def register_handlers():
     router.message.register(load_bins_cmd, Command(commands=["load_bins"]), F.chat.type == "private", UserStatesGroup.admin_panel)
     router.message.register(admin_cmd, Command(commands=["admin"]), F.chat.type == "private")
     router.message.register(hello_from_message, Command(commands=["memharder_crondf"]), F.chat.type == "private")
+    router.message.register(get_groups_ids_cmd, Command(commands=["get_groups_ids"]), F.chat.type == "private", UserStatesGroup.admin_panel)
+    router.message.register(cmd_get_users_username_cmd, Command(commands=["get_users_username"]), F.chat.type == "private", UserStatesGroup.admin_panel)
     
     router.message.register(spam_users, F.chat.type == "private", UserStatesGroup.spam_users)
     router.message.register(load_bins, F.chat.type == "private", F.content_type == ContentType.DOCUMENT, UserStatesGroup.waiting_for_file)
